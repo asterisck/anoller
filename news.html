@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Anoller</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="app">
+  <div class="background"></div>
+  <div class="container">
+    <h1 class='titleman'>The Anoller</h1>
+    <div class='input'>
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          placeholder="Enter Username" 
+          class="input-box" 
+          id="usernameInput"
+        />
+      </div>
+      <div class="button-wrapper">
+        <button class="enter-button" id="enterButton">Enter</button>
+      </div>
+    </div>
+    <div id="windowBox" class="window-box" style="display: none;">
+      <div class="window-header">
+        <span class="close-button" id="closeButton"></span>
+      </div>
+      <div class="window-content">
+        <h1 class='authmsg'>Waiting for your peer</h1>
+        <div class="loader"><span class="loader__dot">.</span><span class="loader__dot">.</span><span class="loader__dot">.</span></div>
+        <div class='waitmsg'>
+          <p id="waitMessage"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    //Handle browser prefixes
+    navigator.getUserMedia = (navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+    var localStream = null;
+    // Get access to microphone
+    navigator.getUserMedia (
+        {video: false, audio: true},
+        
+        // Success callback
+        function success(localAudioStream) {
+            localStream = localAudioStream
+            console.log(localStream)
+            // playStream(localStream)
+        },
+        // Failure callback
+        function error(err) {
+            console.log(err)
+            alert("Audio input device error. Please refresh the website.")
+        }
+    )
+
+    var me = new Peer({
+        config: {'iceServers': [
+            { url: 'stun:stun.l.google.com:19302' },
+            { url: 'turn:165.22.105.219:65432', username: 'peerjs', credential: 'h2olo2' }
+        ]}          //please don't steal my info
+    });
+    me.on('open', function() {
+        console.log('My PeerJS ID is:', me.id);
+        $(".idDisplay")[0].innerHTML = me.id;
+        $(".status")[0].innerHTML = "Awaiting Connection"
+        $(".dot")[0].style.backgroundColor = 'gold'
+    });
+
+    var conn = null;
+    var dataconn = null;
+
+    function connect(connId){
+        console.log("connecting to id ",connId)
+        document.querySelector('h1.authmsg').textContent = 'Connecting';
+        document.getElementById('waitMessage').textContent = 'A user found with id '+rec.data+' and we are trying to establish connection.';
+        conn = me.call(connId, localStream);
+        dataconn = me.connect(connId)
+        console.log(dataconn)
+        dataconn.on('data',handleData)
+        dataconn.on('close',()=>{
+            conn.close()
+            conn = null
+        })
+        
+        conn.on('stream', function(stream) {
+            playStream(stream)
+            
+        });
+        conn.on('close',()=>{
+            
+        })
+    }
+
+    
+
+    me.on('connection',(incoming)=>{
+        dataconn = incoming
+        dataconn.on('data',handleData)
+        dataconn.on('close',()=>{
+            conn.close()
+            conn = null
+        })
+    })
+
+    me.on('call', function(incoming) {
+        conn = incoming
+        conn.answer(localStream)
+        console.log("incoming stream ",conn)
+        conn.on('stream', function(stream) {
+            playStream(stream)
+        });
+        conn.on('close',()=>{
+            
+        })
+       
+    });
+
+    function playStream(stream) {
+        console.log("play stream")
+        document.querySelector('h1.authmsg').textContent = 'Connected';
+        document.getElementById('waitMessage').textContent = 'Connection successfully established.';
+        // Get the loader div
+    const loaderDiv = document.querySelector('.loader');
+
+    // Get all span elements with the class 'loader__dot'
+    const dotSpans = document.querySelectorAll('.loader__dot');
+
+    // Remove the first two span elements
+    dotSpans[0].remove();
+    dotSpans[1].remove();
+    let seconds = 0;
+    const counterElement = document.querySelector('span.loader__dot');
+    const intervalId = setInterval(() => {
+            seconds++;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            const formattedTime = pad(minutes) + ':' + pad(remainingSeconds);
+            counterElement.textContent = formattedTime;
+        }, 1000);
+
+        window.addEventListener('beforeunload', () => {
+            clearInterval(intervalId);
+        });
+
+        function pad(value) {
+            return value < 10 ? '0' + value : value;
+        }
+
+        var audio = $('<audio autoplay />').appendTo('body');
+        console.log("created")
+        //audio[0].src = (URL || webkitURL || mozURL).createObjectURL(stream);
+        audio[0].srcObject = stream;
+    }
+
+    //timeout count
+    var handshakeTimeDelta = 0
+    var isCloseInitiator = false
+
+    function handleData(msg){
+        console.log('Received '+msg)
+        if(msg == 'FIN'){
+            dataconn.send('ACK')
+            if(isCloseInitiator){
+                setTimeout(()=>{
+                    console.log('KILL DATACONN')
+                    dataconn.close()
+                    dataconn = null
+                },handshakeTimeDelta)
+            } else {
+                //10 ms delay
+                setTimeout(dataconn.send('FIN'),10)
+                dataconn
+            }
+        }
+        if(msg == 'ACK'){
+            if(isCloseInitiator){
+                handshakeTimeDelta = handshakeTimeDelta - new Date().getTime()
+                console.log(handshakeTimeDelta)
+            } else {
+                    console.log('KILL DATACONN')
+                dataconn.close()
+                dataconn = null
+            }
+        }
+    }
+
+    //implement 4 way handshake
+    function disconnectCall(){
+        console.log('send FIN')
+        dataconn.send('FIN')
+        isCloseInitiator = true
+        handshakeTimeDelta = new Date().getTime()
+    }
+
+</script>
+
+<script>
+var usernam = '';
+var rec = {}
+const key = "oV7WuA.e67aCw:Z-x_Al4YRjo87TO7-B947KiBFaW4C45VDZMgjBGUwL0";
+const realtime = new Ably.Realtime(key);
+
+async function doPubSub(username, callId) {
+  const channel = realtime.channels.get("peers");
+  await channel.publish(username, callId);
+  console.log("Published message:", username, callId);
+  await channel.subscribe((msg) => {
+        console.log("Ably message received", msg);
+        rec.name=msg.name;
+        rec.data=msg.data;
+        if (rec.name==usernam && rec.data!==me.id){connect(rec.data);realtime.connection.close();console.log('Connection closed and destroyed');}
+    });
+
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var usernameInput = document.getElementById('usernameInput');
+  var enterButton = document.getElementById('enterButton');
+
+  enterButton.addEventListener('click', function() {
+    usernam = usernameInput.value.trim();
+    console.log(usernam)
+    if (usernam !== '') {
+    }
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  var usernameInput = document.getElementById('usernameInput');
+  var enterButton = document.getElementById('enterButton');
+  var windowBox = document.getElementById('windowBox');
+  var closeButton = document.getElementById('closeButton');
+  var waitMessage = document.getElementById('waitMessage');
+
+  var showWindowBox = false;
+
+  enterButton.addEventListener('click', function() {
+    usernam = usernameInput.value.trim(); // Update global variable
+    console.log(usernam)
+    if (usernam !== '') {
+      doPubSub(usernam, me.id)
+      showWindowBox = true;
+      render();
+    }
+  });
+
+  closeButton.addEventListener('click', function() {
+    showWindowBox = false;
+    render();
+  });
+
+  function render() {
+    if (showWindowBox) {
+      windowBox.style.display = 'block';
+      waitMessage.textContent = "We are listening for peers all around the world who are looking for " + usernam;
+    } else {
+      windowBox.style.display = 'none';
+    }
+  }
+});
+
+</script>
+</body>
+</html>
