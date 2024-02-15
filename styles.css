@@ -37,7 +37,7 @@ h1 {
 
 @font-face {
   font-family: 'Comic Sans M';
-  src: url("../src/fonts/comici.ttf");
+  src: url("https://raw.githubusercontent.com/asterisck/anoller/main/src/fonts/comici.ttf");
 }
 
 .titleman {
