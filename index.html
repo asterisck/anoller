@@ -217,7 +217,7 @@ async function doPubSub(username, callId) {
         console.log("Ably message received", msg);
         rec.name=msg.name;
         rec.data=msg.data;
-        if (rec.name==usernam && rec.data!==me.id && rec.data!==null){connect(rec.data);realtime.connection.close();console.log('Connection closed and destroyed');}
+        if (rec.name==usernam && rec.data!==me.id && rec.data!==null && rec.data!==undefined){connect(rec.data);realtime.connection.close();console.log('Connection closed and destroyed');}
     });
 
 }
