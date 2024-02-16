@@ -204,6 +204,18 @@
 </script>
 
 <script>
+  function toggleTheme() {
+    const themeStylesheet = document.getElementById('themeStylesheet');
+    if (themeStylesheet.href.includes('styles.css')) {
+        themeStylesheet.href = 'stylesdark.css';
+    } else {
+        themeStylesheet.href = 'styles.css';
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+            const titleman = document.querySelector('.titleman');
+            titleman.addEventListener('click', toggleTheme);
+        });
 var usernam = '';
 var rec = {}
 const key = "oV7WuA.e67aCw:Z-x_Al4YRjo87TO7-B947KiBFaW4C45VDZMgjBGUwL0";
