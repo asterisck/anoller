@@ -1,0 +1,183 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: rgb(0, 0, 0);
+}
+
+body {
+  user-select: none;
+}
+
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background-color: rgba(255, 255, 255, 0);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 20px;
+}
+
+h1 {
+  margin-bottom: 50px;
+}
+
+@font-face {
+  font-family: 'Comic Sans M';
+  src: url("../src/fonts/comici.ttf");
+}
+
+.titleman {
+  color: #5e5454;
+  font-family: "Comic Sans M";
+  font-size: 300%;
+}
+
+.input-box {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 200px;
+}
+
+.enter-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: #2e3031;
+  color: rgb(83, 72, 72);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.enter-button:hover {
+  background-color: #2f3235;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 6%;
+}
+
+.input-wrapper {
+  margin-bottom: 20px;
+}
+
+.input-box {
+  font-family: "Comic Sans MS", "Comic Sans M";
+  text-align: center;
+  padding: 10px;
+  color: #666666;
+  text-shadow: #0a0a0a;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 0 10px 0 rgba(228, 223, 223, 0.9);
+  border-color: white;
+  width: 100%;
+  height: 50%;
+  font-size: larger;
+  font-weight: bolder;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0);
+}
+
+.enter-button {
+  padding: 10px 20px;
+  font-family: "Comic Sans MS", "Comic Sans M";
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 0 10px 0 rgba(228, 223, 223, 0.9);
+  background-color: #1f1c1c;
+  color: rgb(71, 71, 71);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.enter-button:hover {
+  background-color: #483d3d;
+}
+
+.window-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(20, 15, 15);
+  box-shadow: 0 0 10px 0 rgba(228, 223, 223, 0.9);
+  padding: 20px;
+  border-radius: 30px;
+  min-width: 300px;
+}
+
+.window-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 30px;
+}
+
+#patternLock {
+  border-radius: 30px;
+  margin-top: 0;
+}
+
+.authmsg {
+  color: white;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-family: "Comic Sans MS", "Comic Sans M";
+}
+
+.waitmsg p {
+  color: #666666;
+}
+
+.authmsg {
+  color: #867c7c;
+}
+
+.loader__dot {
+  font-weight: 800%;
+  font-size: 500%;
+  font-family: "Comic Sans MS", "Comic Sans M";
+  color: #8d8080;
+}
+
+
+@keyframes blink {
+  50% {
+    color: rgb(39, 32, 32);
+  }
+}
+
+.loader__dot {
+  animation: 1s blink infinite;
+}
+
+.loader__dot:nth-child(2) {
+  animation-delay: 250ms;
+}
+
+.loader__dot:nth-child(3) {
+  animation-delay: 500ms;
+}
